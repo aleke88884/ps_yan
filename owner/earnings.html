@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Earnings - PS Rent</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="screen-header">
+            <div class="header-spacer"></div>
+            <h2 class="screen-title">Earnings</h2>
+            <div class="header-spacer"></div>
+        </header>
+
+        <main class="screen-content with-nav">
+            <div class="earnings-card">
+                <div class="balance-section">
+                    <span class="balance-label">Available balance</span>
+                    <span class="balance-value" id="balance">12,450₽</span>
+                </div>
+                <button class="btn btn-primary btn-full" onclick="App.showToast('Withdrawal coming soon!', 'info')">
+                    Withdraw
+                </button>
+            </div>
+
+            <div class="period-section">
+                <div class="period-tabs">
+                    <button class="tab active" data-period="week">This Week</button>
+                    <button class="tab" data-period="month">This Month</button>
+                    <button class="tab" data-period="all">All Time</button>
+                </div>
+                <div class="period-stats">
+                    <div class="period-row">
+                        <span>Total earned</span>
+                        <span class="period-value" id="period-earnings">8,400₽</span>
+                    </div>
+                    <div class="period-row">
+                        <span>Completed orders</span>
+                        <span class="period-value" id="period-orders">12</span>
+                    </div>
+                    <div class="period-row">
+                        <span>Hours rented</span>
+                        <span class="period-value" id="period-hours">24</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="transactions-section">
+                <h3 class="section-title">Recent Transactions</h3>
+                <div class="transactions-list" id="transactions-list"></div>
+            </div>
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="home.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+                <span>Home</span>
+            </a>
+            <a href="map.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span>Map</span>
+            </a>
+            <a href="earnings.html" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                <span>Earnings</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Profile</span>
+            </a>
+        </nav>
+    </div>
+
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        const state = App.getState();
+        const ownerProfile = state.ownerProfile;
+
+        // Display balance
+        document.getElementById('balance').textContent = App.formatPrice(ownerProfile.earnings);
+
+        // Period data
+        const periodData = {
+            week: { earnings: 8400, orders: 12, hours: 24 },
+            month: { earnings: 32500, orders: 47, hours: 96 },
+            all: { earnings: 125000, orders: 184, hours: 412 }
+        };
+
+        // Period tabs
+        const tabs = document.querySelectorAll('.period-tabs .tab');
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const period = tab.dataset.period;
+                const data = periodData[period];
+
+                document.getElementById('period-earnings').textContent = App.formatPrice(data.earnings);
+                document.getElementById('period-orders').textContent = data.orders;
+                document.getElementById('period-hours').textContent = data.hours;
+            });
+        });
+
+        // Transactions
+        const transactionsList = document.getElementById('transactions-list');
+        transactionsList.innerHTML = MockData.transactions.map(tx => `
+            <div class="transaction-item">
+                <div class="transaction-icon ${tx.type === 'withdrawal' ? 'withdrawal' : ''}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        ${tx.type === 'earning'
+                            ? '<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>'
+                            : '<line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/>'
+                        }
+                    </svg>
+                </div>
+                <div class="transaction-info">
+                    <span class="transaction-title">${tx.title}</span>
+                    <span class="transaction-date">${App.formatDate(tx.date)}</span>
+                </div>
+                <span class="transaction-amount ${tx.type === 'withdrawal' ? 'withdrawal' : ''}">
+                    ${tx.amount > 0 ? '+' : ''}${App.formatPrice(Math.abs(tx.amount))}
+                </span>
+            </div>
+        `).join('');
+    </script>
+</body>
+</html>

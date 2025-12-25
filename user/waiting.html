@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Finding PlayStation - PS Rent</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="screen-header">
+            <button class="btn-back" id="btn-back">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h2 class="screen-title">Finding PlayStation</h2>
+            <div class="header-spacer"></div>
+        </header>
+
+        <main class="screen-content center">
+            <div class="searching-animation">
+                <div class="pulse-ring"></div>
+                <div class="pulse-ring delay-1"></div>
+                <div class="pulse-ring delay-2"></div>
+                <div class="searching-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="6" width="20" height="12" rx="2"/>
+                        <circle cx="8" cy="12" r="2"/>
+                        <circle cx="16" cy="12" r="2"/>
+                    </svg>
+                </div>
+            </div>
+
+            <h2 class="searching-title">Looking for owners nearby...</h2>
+            <p class="searching-subtitle">This usually takes about 1-3 minutes</p>
+
+            <div class="order-summary-mini">
+                <div class="summary-item">
+                    <span class="summary-label">Console</span>
+                    <span class="summary-value" id="order-console">PS5</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Duration</span>
+                    <span class="summary-value" id="order-duration">2 hours</span>
+                </div>
+                <div class="summary-item">
+                    <span class="summary-label">Total</span>
+                    <span class="summary-value" id="order-total">2,100₽</span>
+                </div>
+            </div>
+        </main>
+
+        <footer class="screen-footer">
+            <button class="btn btn-secondary btn-full" id="btn-cancel">
+                Cancel Search
+            </button>
+        </footer>
+    </div>
+
+    <!-- Cancel Modal -->
+    <div class="modal" id="cancel-modal">
+        <div class="modal-backdrop"></div>
+        <div class="modal-content">
+            <h3>Cancel search?</h3>
+            <p>Are you sure you want to cancel your PlayStation search?</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="btn-keep-searching">Keep Searching</button>
+                <button class="btn btn-danger" id="btn-confirm-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        // Get active order from state
+        const state = App.getState();
+        const order = state.activeOrder;
+
+        if (!order) {
+            // No active order, go back to home
+            window.location.href = 'home.html';
+        } else {
+            // Display order info
+            document.getElementById('order-console').textContent = order.consoleName;
+            document.getElementById('order-duration').textContent = order.duration + ' hours';
+            document.getElementById('order-total').textContent = App.formatPrice(order.total);
+        }
+
+        // Simulate finding an owner after 3-5 seconds
+        const searchTimeout = setTimeout(() => {
+            // Pick a random online owner
+            const onlineOwners = MockData.owners.filter(o => o.isOnline);
+            const selectedOwner = onlineOwners[Math.floor(Math.random() * onlineOwners.length)];
+
+            // Update order with owner info
+            const updatedOrder = {
+                ...order,
+                status: 'accepted',
+                owner: selectedOwner,
+                acceptedAt: Date.now()
+            };
+
+            App.updateState({ activeOrder: updatedOrder });
+
+            // Navigate to accepted screen
+            window.location.href = 'accepted.html';
+        }, 3000 + Math.random() * 2000);
+
+        // Cancel modal handling
+        const cancelModal = document.getElementById('cancel-modal');
+        const btnBack = document.getElementById('btn-back');
+        const btnCancel = document.getElementById('btn-cancel');
+        const btnKeepSearching = document.getElementById('btn-keep-searching');
+        const btnConfirmCancel = document.getElementById('btn-confirm-cancel');
+
+        function showCancelModal() {
+            cancelModal.classList.add('active');
+        }
+
+        function hideCancelModal() {
+            cancelModal.classList.remove('active');
+        }
+
+        btnBack.addEventListener('click', showCancelModal);
+        btnCancel.addEventListener('click', showCancelModal);
+        btnKeepSearching.addEventListener('click', hideCancelModal);
+        cancelModal.querySelector('.modal-backdrop').addEventListener('click', hideCancelModal);
+
+        btnConfirmCancel.addEventListener('click', () => {
+            clearTimeout(searchTimeout);
+            App.updateState({ activeOrder: null });
+            window.location.href = 'home.html';
+        });
+    </script>
+</body>
+</html>

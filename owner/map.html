@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Map - PS Rent</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        .map-container {
+            position: relative;
+            height: calc(100vh - var(--nav-height));
+            height: calc(100dvh - var(--nav-height));
+        }
+        .leaflet-control-zoom {
+            border: none !important;
+            box-shadow: var(--shadow-md) !important;
+        }
+        .leaflet-control-zoom a {
+            background-color: var(--bg-primary) !important;
+            color: var(--text-primary) !important;
+            border: none !important;
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            font-size: 18px !important;
+        }
+        .leaflet-control-zoom a:first-child {
+            border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+        }
+        .leaflet-control-zoom a:last-child {
+            border-radius: 0 0 var(--radius-md) var(--radius-md) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="map-container">
+            <div id="map"></div>
+
+            <!-- Map Overlay -->
+            <div class="map-overlay">
+                <div class="map-status-bar">
+                    <div class="map-status-info">
+                        <div class="status-indicator" id="status-indicator"></div>
+                        <span class="map-status-text" id="status-text">Offline</span>
+                    </div>
+                    <div class="orders-count-badge" id="orders-badge" style="display: none;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span id="orders-count">0 orders</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="online-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Order Popup Card -->
+            <div class="order-popup" id="order-popup">
+                <div class="order-popup-header">
+                    <div class="order-popup-user">
+                        <div class="order-popup-avatar" id="popup-avatar">A</div>
+                        <div>
+                            <div class="order-popup-name" id="popup-name">Alex</div>
+                            <div class="order-popup-rating">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                <span id="popup-rating">4.8</span>
+                                <span id="popup-orders">(12 orders)</span>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="order-popup-close" onclick="closePopup()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"/>
+                            <line x1="6" y1="6" x2="18" y2="18"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="order-popup-body">
+                    <div class="order-popup-stats">
+                        <div class="popup-stat">
+                            <span class="popup-stat-value" id="popup-console">PS5</span>
+                            <span class="popup-stat-label">Console</span>
+                        </div>
+                        <div class="popup-stat">
+                            <span class="popup-stat-value" id="popup-duration">2h</span>
+                            <span class="popup-stat-label">Duration</span>
+                        </div>
+                        <div class="popup-stat">
+                            <span class="popup-stat-value" id="popup-distance">2.3 km</span>
+                            <span class="popup-stat-label">Distance</span>
+                        </div>
+                    </div>
+
+                    <div class="order-popup-earnings">
+                        <span class="earnings-text">Your earnings</span>
+                        <span class="earnings-amount-popup" id="popup-earnings">1,680₽</span>
+                    </div>
+
+                    <!-- User Reviews from Other Owners -->
+                    <div class="user-reviews-section" id="reviews-section">
+                        <div class="reviews-header">
+                            <span class="reviews-title">Reviews from other owners</span>
+                            <span class="reviews-count" id="reviews-count">3 reviews</span>
+                        </div>
+                        <div class="reviews-list" id="reviews-list">
+                            <!-- Reviews will be populated here -->
+                        </div>
+                    </div>
+
+                    <div class="order-popup-actions">
+                        <button class="btn btn-secondary" onclick="declineOrder()">
+                            Decline
+                        </button>
+                        <button class="btn btn-primary" onclick="acceptOrder()">
+                            Accept
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="home.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                </svg>
+                <span>Home</span>
+            </a>
+            <a href="map.html" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                    <circle cx="12" cy="10" r="3"/>
+                </svg>
+                <span>Map</span>
+            </a>
+            <a href="earnings.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                </svg>
+                <span>Earnings</span>
+            </a>
+            <a href="profile.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>Profile</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        const state = App.getState();
+        const ownerProfile = state.ownerProfile;
+
+        // Map initialization - Moscow center
+        const map = L.map('map', {
+            zoomControl: false
+        }).setView([55.7558, 37.6173], 13);
+
+        // Add zoom control to bottom right
+        L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+        // Light map style
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; OpenStreetMap, &copy; CartoDB',
+            maxZoom: 19
+        }).addTo(map);
+
+        // Toggle elements
+        const onlineToggle = document.getElementById('online-toggle');
+        const statusIndicator = document.getElementById('status-indicator');
+        const statusText = document.getElementById('status-text');
+        const ordersBadge = document.getElementById('orders-badge');
+        const ordersCount = document.getElementById('orders-count');
+        const orderPopup = document.getElementById('order-popup');
+
+        // Markers array
+        let markers = [];
+        let selectedOrder = null;
+
+        // Load online status
+        onlineToggle.checked = ownerProfile.isOnline;
+        updateOnlineUI(ownerProfile.isOnline);
+
+        // Toggle handler
+        onlineToggle.addEventListener('change', () => {
+            const isOnline = onlineToggle.checked;
+            App.updateState({
+                ownerProfile: { ...ownerProfile, isOnline }
+            });
+            updateOnlineUI(isOnline);
+
+            if (isOnline) {
+                App.showToast('You are now online!', 'success');
+            } else {
+                App.showToast('You are now offline', 'info');
+            }
+        });
+
+        function updateOnlineUI(isOnline) {
+            if (isOnline) {
+                statusIndicator.classList.add('online');
+                statusText.textContent = 'Online';
+                ordersBadge.style.display = 'flex';
+                renderOrderMarkers();
+            } else {
+                statusIndicator.classList.remove('online');
+                statusText.textContent = 'Offline';
+                ordersBadge.style.display = 'none';
+                clearMarkers();
+                closePopup();
+            }
+        }
+
+        function clearMarkers() {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+        }
+
+        function renderOrderMarkers() {
+            clearMarkers();
+            const requests = MockData.incomingRequests;
+            ordersCount.textContent = `${requests.length} orders`;
+
+            // Generate random positions around Moscow
+            const baseCoords = [55.7558, 37.6173];
+
+            requests.forEach((request, index) => {
+                // Random offset for each marker
+                const lat = baseCoords[0] + (Math.random() - 0.5) * 0.05;
+                const lng = baseCoords[1] + (Math.random() - 0.5) * 0.08;
+
+                // Create custom icon
+                const icon = L.divIcon({
+                    className: 'order-marker-wrapper',
+                    html: `<div class="order-marker ${index === 0 ? 'new' : ''}">${request.user.avatar}</div>`,
+                    iconSize: [44, 44],
+                    iconAnchor: [22, 22]
+                });
+
+                const marker = L.marker([lat, lng], { icon })
+                    .addTo(map)
+                    .on('click', () => showOrderPopup(request));
+
+                markers.push(marker);
+            });
+        }
+
+        function showOrderPopup(order) {
+            selectedOrder = order;
+
+            // Populate popup data
+            document.getElementById('popup-avatar').textContent = order.user.avatar;
+            document.getElementById('popup-name').textContent = order.user.name;
+            document.getElementById('popup-rating').textContent = order.user.rating;
+            document.getElementById('popup-orders').textContent = `(${order.user.orders} orders)`;
+            document.getElementById('popup-console').textContent = order.console;
+            document.getElementById('popup-duration').textContent = `${order.duration}h`;
+            document.getElementById('popup-distance').textContent = `${order.distance} km`;
+            document.getElementById('popup-earnings').textContent = App.formatPrice(order.earnings);
+
+            // Render reviews
+            renderReviews(order.user);
+
+            // Show popup
+            orderPopup.classList.add('active');
+        }
+
+        function renderReviews(user) {
+            const reviewsList = document.getElementById('reviews-list');
+            const reviewsCount = document.getElementById('reviews-count');
+
+            // Get reviews for this user from mock data
+            const reviews = MockData.userReviews?.[user.name] || [];
+
+            if (reviews.length === 0) {
+                reviewsCount.textContent = 'No reviews yet';
+                reviewsList.innerHTML = `
+                    <div class="review-item" style="justify-content: center; color: var(--text-tertiary);">
+                        <span>This user is new, no reviews from owners yet</span>
+                    </div>
+                `;
+                return;
+            }
+
+            reviewsCount.textContent = `${reviews.length} reviews`;
+            reviewsList.innerHTML = reviews.map(review => `
+                <div class="review-item">
+                    <div class="review-avatar">${review.ownerAvatar}</div>
+                    <div class="review-content">
+                        <div class="review-author">
+                            ${review.ownerName}
+                            <span class="rating">
+                                <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                ${review.rating}
+                            </span>
+                        </div>
+                        <div class="review-text">${review.comment}</div>
+                        <div class="review-date">${review.date}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function closePopup() {
+            orderPopup.classList.remove('active');
+            selectedOrder = null;
+        }
+
+        function acceptOrder() {
+            if (!selectedOrder) return;
+
+            // Store request and navigate
+            App.updateState({ currentRequestId: selectedOrder.id });
+            window.location.href = 'request.html';
+        }
+
+        function declineOrder() {
+            closePopup();
+            App.showToast('Order declined', 'info');
+        }
+
+        // Close popup when clicking outside
+        map.on('click', () => {
+            if (orderPopup.classList.contains('active')) {
+                closePopup();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Request Details - PS Rent</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="screen-header">
+            <button class="btn-back" onclick="window.location.href='home.html'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h2 class="screen-title">Request Details</h2>
+            <div class="header-spacer"></div>
+        </header>
+
+        <main class="screen-content">
+            <div class="request-detail-card">
+                <div class="requester-info">
+                    <div class="avatar large">
+                        <span id="user-avatar">A</span>
+                    </div>
+                    <div class="requester-details">
+                        <h3 id="user-name">Alex</h3>
+                        <div class="requester-rating">
+                            <svg viewBox="0 0 24 24" fill="currentColor" class="star-icon">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                            <span id="user-rating">4.8</span>
+                            <span class="rating-count">(<span id="user-orders">12</span> orders)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 24px;">
+                    <div class="detail-row">
+                        <span class="detail-label">Console requested</span>
+                        <span class="detail-value" id="request-console">PS5</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Duration</span>
+                        <span class="detail-value" id="request-duration">2 hours</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Delivery</span>
+                        <span class="detail-value" id="request-delivery">Delivery to customer</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Distance</span>
+                        <span class="detail-value" id="request-distance">2.3 km</span>
+                    </div>
+                </div>
+
+                <div class="earnings-preview">
+                    <span class="earnings-label">Your earnings</span>
+                    <span class="earnings-value" id="request-earnings">1,680₽</span>
+                </div>
+
+                <div class="request-timer">
+                    <span>Request expires in</span>
+                    <span class="timer-countdown" id="request-timer">0:45</span>
+                </div>
+            </div>
+        </main>
+
+        <footer class="screen-footer dual">
+            <button class="btn btn-secondary" onclick="declineRequest()">
+                Decline
+            </button>
+            <button class="btn btn-primary" id="btn-accept">
+                <span class="btn-text">Accept</span>
+                <span class="btn-loader hidden"></span>
+            </button>
+        </footer>
+    </div>
+
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        const state = App.getState();
+        const requestId = state.currentRequestId;
+
+        // Find request
+        const request = MockData.incomingRequests.find(r => r.id === requestId);
+
+        if (!request) {
+            window.location.href = 'home.html';
+        }
+
+        // Display request info
+        document.getElementById('user-avatar').textContent = request.user.avatar;
+        document.getElementById('user-name').textContent = request.user.name;
+        document.getElementById('user-rating').textContent = request.user.rating;
+        document.getElementById('user-orders').textContent = request.user.orders;
+        document.getElementById('request-console').textContent = request.consoleFull;
+        document.getElementById('request-duration').textContent = request.duration + ' hours';
+        document.getElementById('request-delivery').textContent = request.delivery === 'delivery' ? 'Delivery to customer' : 'Customer pickup';
+        document.getElementById('request-distance').textContent = request.distance + ' km';
+        document.getElementById('request-earnings').textContent = App.formatPrice(request.earnings);
+
+        // Timer
+        let seconds = 45;
+        const timerEl = document.getElementById('request-timer');
+
+        const timerInterval = setInterval(() => {
+            seconds--;
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            timerEl.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+
+            if (seconds <= 0) {
+                clearInterval(timerInterval);
+                App.showToast('Request expired', 'info');
+                window.location.href = 'home.html';
+            }
+        }, 1000);
+
+        // Accept button
+        const btnAccept = document.getElementById('btn-accept');
+        btnAccept.addEventListener('click', async () => {
+            App.setButtonLoading(btnAccept, true);
+            clearInterval(timerInterval);
+
+            await App.delay(1500);
+
+            // Create active rental
+            App.updateState({
+                activeRental: {
+                    ...request,
+                    status: 'delivering',
+                    acceptedAt: Date.now()
+                }
+            });
+
+            App.showToast('Request accepted!', 'success');
+            window.location.href = 'active.html';
+        });
+
+        function declineRequest() {
+            clearInterval(timerInterval);
+
+            // Remove request from list (mock)
+            const index = MockData.incomingRequests.findIndex(r => r.id === requestId);
+            if (index > -1) {
+                MockData.incomingRequests.splice(index, 1);
+            }
+
+            App.showToast('Request declined', 'info');
+            window.location.href = 'home.html';
+        }
+    </script>
+</body>
+</html>

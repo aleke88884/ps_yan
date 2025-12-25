@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rate Owner - PS Rent</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="screen-header">
+            <button class="btn-back" onclick="skipRating()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+            <h2 class="screen-title">Rate Owner</h2>
+            <div class="header-spacer"></div>
+        </header>
+
+        <main class="screen-content">
+            <div class="rate-card">
+                <div class="rate-owner-info">
+                    <div class="avatar xlarge" style="margin: 0 auto;">
+                        <span id="owner-avatar">D</span>
+                    </div>
+                    <h3 id="owner-name">Dmitry</h3>
+                    <p>How was your experience?</p>
+                </div>
+
+                <div class="star-rating">
+                    <button class="star-btn" data-rating="1">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </button>
+                    <button class="star-btn" data-rating="2">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </button>
+                    <button class="star-btn" data-rating="3">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </button>
+                    <button class="star-btn" data-rating="4">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </button>
+                    <button class="star-btn" data-rating="5">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <p class="rating-label" id="rating-label">Tap to rate</p>
+
+                <textarea class="review-input" id="review-input" placeholder="Add a comment (optional)"></textarea>
+            </div>
+        </main>
+
+        <footer class="screen-footer">
+            <button class="btn btn-primary btn-full" id="btn-submit" disabled>
+                <span class="btn-text">Submit Review</span>
+                <span class="btn-loader hidden"></span>
+            </button>
+        </footer>
+    </div>
+
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        const state = App.getState();
+        const order = state.activeOrder;
+
+        if (!order || !order.owner) {
+            window.location.href = 'home.html';
+        } else {
+            document.getElementById('owner-avatar').textContent = order.owner.avatar;
+            document.getElementById('owner-name').textContent = order.owner.name;
+        }
+
+        // Rating functionality
+        const starBtns = document.querySelectorAll('.star-btn');
+        const ratingLabel = document.getElementById('rating-label');
+        const btnSubmit = document.getElementById('btn-submit');
+        let currentRating = 0;
+
+        const ratingLabels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'];
+
+        starBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const rating = parseInt(btn.dataset.rating);
+                currentRating = rating;
+
+                // Update UI
+                starBtns.forEach(b => {
+                    const r = parseInt(b.dataset.rating);
+                    b.classList.toggle('active', r <= rating);
+                });
+
+                ratingLabel.textContent = ratingLabels[rating];
+                btnSubmit.disabled = false;
+            });
+        });
+
+        // Submit
+        btnSubmit.addEventListener('click', async () => {
+            App.setButtonLoading(btnSubmit, true);
+
+            await App.delay(1000);
+
+            // Clear active order
+            App.updateState({ activeOrder: null });
+
+            App.showToast('Thank you for your feedback!', 'success');
+            window.location.href = 'home.html';
+        });
+
+        function skipRating() {
+            App.updateState({ activeOrder: null });
+            window.location.href = 'home.html';
+        }
+    </script>
+</body>
+</html>
