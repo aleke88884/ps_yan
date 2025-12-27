@@ -14,8 +14,8 @@ const App = {
         // Current user data
         user: {
             id: 1,
-            name: 'Alex',
-            phone: '+7 900 123 45 67',
+            name: 'Alikhan',
+            phone: '+7 707 123 45 67',
             avatar: 'A',
             rating: 4.8,
             ordersCount: 12,
@@ -26,17 +26,17 @@ const App = {
         // Owner profile (when role is owner)
         ownerProfile: {
             id: 1,
-            name: 'Dmitry',
-            phone: '+7 900 987 65 43',
+            name: 'Damir',
+            phone: '+7 701 987 65 43',
             avatar: 'D',
             rating: 4.9,
             reviewsCount: 124,
             totalOrders: 47,
-            earnings: 12450,
-            todayEarnings: 3600,
+            earnings: 524500,
+            todayEarnings: 45000,
             todayOrders: 2,
             isOnline: false,
-            console: {
+            equipment: {
                 type: 'PlayStation 5',
                 edition: 'Digital Edition',
                 controllers: 2,
@@ -113,16 +113,16 @@ const App = {
 
     // ==================== PRICING CALCULATIONS ====================
 
-    calculatePrice(console, duration, delivery) {
-        const rates = MockData.pricing.hourlyRates;
-        const hourlyRate = rates[console] || rates['ps5'];
+    calculatePrice(itemType, durationDays, delivery) {
+        const rates = MockData.pricing.dailyRates;
+        const dailyRate = rates[itemType] || rates['ps5'];
         const deliveryFee = delivery === 'delivery' ? MockData.pricing.deliveryFee : 0;
 
-        const rentalPrice = hourlyRate * duration;
+        const rentalPrice = dailyRate * durationDays;
         const total = rentalPrice + deliveryFee;
 
         return {
-            hourlyRate,
+            dailyRate,
             rentalPrice,
             deliveryFee,
             total
@@ -137,7 +137,7 @@ const App = {
     // ==================== FORMATTING UTILITIES ====================
 
     formatPrice(amount) {
-        return amount.toLocaleString('ru-RU') + '₽';
+        return amount.toLocaleString('kk-KZ') + ' ₸';
     },
 
     formatDate(dateStr) {
@@ -170,8 +170,13 @@ const App = {
         return Math.floor(seconds / 86400) + 'd ago';
     },
 
+    getItemName(code) {
+        return MockData.itemNames[code] || code;
+    },
+
+    // Backward compatibility
     getConsoleName(code) {
-        return MockData.consoleNames[code] || code;
+        return this.getItemName(code);
     },
 
     // ==================== TOAST NOTIFICATIONS ====================

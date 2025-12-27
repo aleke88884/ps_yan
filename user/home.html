@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Home - PS Rent</title>
+    <title>Home - RentTech</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
         <header class="screen-header home-header">
             <div class="user-greeting">
                 <span class="greeting-text">Hello,</span>
-                <span class="user-name" id="user-name">Alex</span>
+                <span class="user-name" id="user-name">Alikhan</span>
             </div>
             <a href="profile.html" class="btn-icon">
                 <div class="avatar">
@@ -24,93 +24,28 @@
         </header>
 
         <main class="screen-content with-nav">
-            <div class="home-card">
-                <h2>Rent a PlayStation</h2>
-                <p>Create a rental request and get matched with nearby owners</p>
-
-                <div class="form-section">
-                    <label class="form-label">Console Type</label>
-                    <div class="option-chips">
-                        <button class="chip active" data-console="ps5">PS5</button>
-                        <button class="chip" data-console="ps4-pro">PS4 Pro</button>
-                        <button class="chip" data-console="ps4">PS4</button>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <label class="form-label">Duration</label>
-                    <div class="duration-selector">
-                        <button class="duration-btn" id="btn-decrease">−</button>
-                        <div class="duration-display">
-                            <span class="duration-value" id="duration-value">2</span>
-                            <span class="duration-unit">hours</span>
-                        </div>
-                        <button class="duration-btn" id="btn-increase">+</button>
-                    </div>
-                </div>
-
-                <div class="form-section">
-                    <label class="form-label">Delivery Method</label>
-                    <div class="delivery-options">
-                        <label class="radio-card active" data-delivery="delivery">
-                            <input type="radio" name="delivery" value="delivery" checked>
-                            <div class="radio-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="1" y="3" width="15" height="13"/>
-                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
-                                    <circle cx="5.5" cy="18.5" r="2.5"/>
-                                    <circle cx="18.5" cy="18.5" r="2.5"/>
-                                </svg>
-                            </div>
-                            <span>Delivery</span>
-                            <span class="delivery-price">+500₽</span>
-                        </label>
-                        <label class="radio-card" data-delivery="pickup">
-                            <input type="radio" name="delivery" value="pickup">
-                            <div class="radio-icon">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                                    <circle cx="12" cy="10" r="3"/>
-                                </svg>
-                            </div>
-                            <span>Pickup</span>
-                            <span class="delivery-price">Free</span>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="price-summary">
-                    <div class="price-row">
-                        <span>Rental (<span id="summary-hours">2</span>h × <span id="hourly-rate">800</span>₽)</span>
-                        <span id="rental-price">1,600₽</span>
-                    </div>
-                    <div class="price-row" id="delivery-row">
-                        <span>Delivery</span>
-                        <span id="delivery-price">500₽</span>
-                    </div>
-                    <div class="price-row total">
-                        <span>Total</span>
-                        <span id="total-price">2,100₽</span>
-                    </div>
+            <!-- Filter Section -->
+            <div class="filter-section">
+                <div class="filter-chips">
+                    <button class="filter-chip active" data-filter="all">All</button>
+                    <button class="filter-chip" data-filter="ps5">PS5</button>
+                    <button class="filter-chip" data-filter="ps4">PS4</button>
+                    <button class="filter-chip" data-filter="gaming-pc">PC</button>
+                    <button class="filter-chip" data-filter="vr">VR</button>
+                    <button class="filter-chip" data-filter="nintendo-switch">Switch</button>
                 </div>
             </div>
 
-            <!-- Recent Orders -->
-            <div class="home-card" id="recent-orders-card" style="display: none;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-                    <h3 style="font-size: 16px; font-weight: 600;">Recent Orders</h3>
-                    <a href="orders.html" class="btn-link">View all</a>
-                </div>
-                <div class="order-list" id="recent-orders"></div>
+            <!-- Rental Listings -->
+            <div class="section-header">
+                <h3>Available Near You</h3>
+                <span class="listing-count" id="listing-count">8 listings</span>
+            </div>
+
+            <div class="rental-listings" id="rental-listings">
+                <!-- Listings will be populated by JS -->
             </div>
         </main>
-
-        <footer class="screen-footer with-nav">
-            <button class="btn btn-primary btn-full" id="btn-find">
-                <span class="btn-text">Find PlayStation</span>
-                <span class="btn-loader hidden"></span>
-            </button>
-        </footer>
 
         <nav class="bottom-nav">
             <a href="home.html" class="nav-item active">
@@ -139,35 +74,7 @@
     <script src="../js/mock-data.js"></script>
     <script src="../js/app.js"></script>
     <script>
-        // State
-        let config = {
-            console: 'ps5',
-            duration: 2,
-            delivery: 'delivery'
-        };
-
-        // DOM Elements
-        const chips = document.querySelectorAll('.chip');
-        const radioCards = document.querySelectorAll('.radio-card');
-        const btnDecrease = document.getElementById('btn-decrease');
-        const btnIncrease = document.getElementById('btn-increase');
-        const durationValue = document.getElementById('duration-value');
-        const btnFind = document.getElementById('btn-find');
-
-        // Load saved config
         const state = App.getState();
-        if (state.orderConfig) {
-            config = { ...config, ...state.orderConfig };
-            durationValue.textContent = config.duration;
-
-            // Update UI to match saved config
-            chips.forEach(chip => {
-                chip.classList.toggle('active', chip.dataset.console === config.console);
-            });
-            radioCards.forEach(card => {
-                card.classList.toggle('active', card.dataset.delivery === config.delivery);
-            });
-        }
 
         // Update user info
         if (state.user) {
@@ -175,118 +82,97 @@
             document.getElementById('user-avatar').textContent = state.user.avatar;
         }
 
-        // Console selection
-        chips.forEach(chip => {
+        // Filter chips
+        const filterChips = document.querySelectorAll('.filter-chip');
+        let currentFilter = 'all';
+
+        filterChips.forEach(chip => {
             chip.addEventListener('click', () => {
-                chips.forEach(c => c.classList.remove('active'));
+                filterChips.forEach(c => c.classList.remove('active'));
                 chip.classList.add('active');
-                config.console = chip.dataset.console;
-                updatePricing();
+                currentFilter = chip.dataset.filter;
+                renderListings();
             });
         });
 
-        // Delivery selection
-        radioCards.forEach(card => {
-            card.addEventListener('click', () => {
-                radioCards.forEach(c => c.classList.remove('active'));
-                card.classList.add('active');
-                config.delivery = card.dataset.delivery;
-                updatePricing();
-            });
-        });
-
-        // Duration controls
-        btnDecrease.addEventListener('click', () => {
-            if (config.duration > 1) {
-                config.duration--;
-                durationValue.textContent = config.duration;
-                updatePricing();
-            }
-        });
-
-        btnIncrease.addEventListener('click', () => {
-            if (config.duration < 12) {
-                config.duration++;
-                durationValue.textContent = config.duration;
-                updatePricing();
-            }
-        });
-
-        // Update pricing display
-        function updatePricing() {
-            const pricing = App.calculatePrice(config.console, config.duration, config.delivery);
-
-            document.getElementById('summary-hours').textContent = config.duration;
-            document.getElementById('hourly-rate').textContent = pricing.hourlyRate.toLocaleString();
-            document.getElementById('rental-price').textContent = App.formatPrice(pricing.rentalPrice);
-            document.getElementById('total-price').textContent = App.formatPrice(pricing.total);
-
-            const deliveryRow = document.getElementById('delivery-row');
-            if (config.delivery === 'delivery') {
-                deliveryRow.style.display = 'flex';
-                document.getElementById('delivery-price').textContent = App.formatPrice(pricing.deliveryFee);
-            } else {
-                deliveryRow.style.display = 'none';
-            }
+        // Get item icon based on type
+        function getItemIcon(itemType) {
+            const icons = {
+                'ps5': 'PS5',
+                'ps4': 'PS4',
+                'ps4-pro': 'PS4',
+                'gaming-pc': 'PC',
+                'vr': 'VR',
+                'nintendo-switch': 'NSW'
+            };
+            return icons[itemType] || 'TECH';
         }
 
-        // Find PlayStation button
-        btnFind.addEventListener('click', async () => {
-            App.setButtonLoading(btnFind, true);
+        // Render rental listings
+        function renderListings() {
+            const listings = MockData.rentalListings || [];
+            const filtered = currentFilter === 'all'
+                ? listings
+                : listings.filter(l => l.itemType === currentFilter);
 
-            // Calculate pricing
-            const pricing = App.calculatePrice(config.console, config.duration, config.delivery);
+            document.getElementById('listing-count').textContent = `${filtered.length} listings`;
 
-            // Create order object
-            const order = {
-                console: config.console,
-                consoleName: App.getConsoleName(config.console),
-                duration: config.duration,
-                delivery: config.delivery,
-                hourlyRate: pricing.hourlyRate,
-                rentalPrice: pricing.rentalPrice,
-                deliveryFee: pricing.deliveryFee,
-                total: pricing.total,
-                status: 'searching',
-                createdAt: Date.now()
-            };
+            const container = document.getElementById('rental-listings');
 
-            // Save to state
-            App.updateState({
-                orderConfig: config,
-                activeOrder: order
-            });
-
-            await App.delay(500);
-
-            // Navigate to waiting screen
-            window.location.href = 'waiting.html';
-        });
-
-        // Show recent orders if any
-        const recentOrders = MockData.userOrders.slice(0, 2);
-        if (recentOrders.length > 0) {
-            document.getElementById('recent-orders-card').style.display = 'block';
-            document.getElementById('recent-orders').innerHTML = recentOrders.map(order => `
-                <div class="order-item">
-                    <div class="order-icon">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="2" y="6" width="20" height="12" rx="2"/>
-                            <circle cx="8" cy="12" r="2"/>
-                            <circle cx="16" cy="12" r="2"/>
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <svg class="empty-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="4" width="20" height="16" rx="2"/>
+                            <path d="M6 8h.01M10 8h.01"/>
+                            <path d="M6 12h12"/>
                         </svg>
+                        <p class="empty-state-title">No listings found</p>
+                        <p class="empty-state-desc">Try changing your filter</p>
                     </div>
-                    <div class="order-info">
-                        <span class="order-title">${order.console} - ${order.duration}h</span>
-                        <span class="order-date">${App.formatDate(order.date)}</span>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(listing => `
+                <div class="rental-card" onclick="viewListing(${listing.id})">
+                    <div class="rental-card-image">
+                        <img src="${listing.image}" alt="${listing.title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%230f172a%22 width=%22100%22 height=%22100%22/><text x=%2250%22 y=%2255%22 fill=%22%230ea5e9%22 text-anchor=%22middle%22 font-size=%2220%22 font-family=%22Inter,sans-serif%22 font-weight=%22700%22>${getItemIcon(listing.itemType)}</text></svg>'">
+                        <span class="rental-card-badge">${App.getItemName(listing.itemType)}</span>
                     </div>
-                    <span class="order-amount">${App.formatPrice(order.total)}</span>
+                    <div class="rental-card-content">
+                        <h4 class="rental-card-title">${listing.title}</h4>
+                        <p class="rental-card-desc">${listing.description}</p>
+                        <div class="rental-card-footer">
+                            <div class="rental-card-owner">
+                                <div class="rental-card-avatar">${listing.owner.avatar}</div>
+                                <div class="rental-card-owner-info">
+                                    <span class="rental-card-owner-name">${listing.owner.name}</span>
+                                    <span class="rental-card-rating">
+                                        <svg viewBox="0 0 24 24" fill="currentColor">
+                                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                                        </svg>
+                                        ${listing.owner.rating}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="rental-card-price">
+                                <span class="price-value">${App.formatPrice(listing.pricePerDay)}</span>
+                                <span class="price-unit">/day</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             `).join('');
         }
 
-        // Initialize pricing
-        updatePricing();
+        function viewListing(listingId) {
+            App.updateState({ currentListingId: listingId });
+            window.location.href = 'listing.html';
+        }
+
+        // Initial render
+        renderListings();
     </script>
 </body>
 </html>

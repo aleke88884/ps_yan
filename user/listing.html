@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rental Details - RentTech</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="screen-header">
+            <button class="btn-back" onclick="window.location.href='home.html'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h2 class="screen-title">Details</h2>
+            <div class="header-spacer"></div>
+        </header>
+
+        <main class="screen-content">
+            <div class="listing-detail-image" id="listing-image">
+                <span class="listing-badge" id="listing-badge">PlayStation 5</span>
+            </div>
+
+            <div class="listing-detail-content">
+                <h1 class="listing-detail-title" id="listing-title">PS5 + FIFA 24</h1>
+                <p class="listing-detail-desc" id="listing-desc">Description here</p>
+
+                <div class="listing-detail-owner" id="listing-owner">
+                    <div class="listing-owner-avatar">D</div>
+                    <div class="listing-owner-info">
+                        <span class="listing-owner-name">Damir</span>
+                        <span class="listing-owner-rating">
+                            <svg viewBox="0 0 24 24" fill="currentColor">
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                            </svg>
+                            <span id="owner-rating">4.9</span>
+                            <span class="rating-count">(<span id="owner-reviews">124</span> reviews)</span>
+                        </span>
+                    </div>
+                    <span class="listing-distance" id="listing-distance">2.3 km</span>
+                </div>
+
+                <div class="listing-detail-section" id="games-section">
+                    <h3>Included Games</h3>
+                    <div class="games-list" id="games-list"></div>
+                </div>
+
+                <div class="listing-detail-section" id="specs-section" style="display:none;">
+                    <h3>Specifications</h3>
+                    <div class="specs-list" id="specs-list"></div>
+                </div>
+
+                <div class="listing-detail-section">
+                    <h3>Details</h3>
+                    <div class="listing-specs">
+                        <div class="spec-item">
+                            <span class="spec-label">Equipment</span>
+                            <span class="spec-value" id="spec-console">PlayStation 5</span>
+                        </div>
+                        <div class="spec-item" id="controllers-row">
+                            <span class="spec-label">Controllers</span>
+                            <span class="spec-value" id="spec-controllers">2</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">Delivery</span>
+                            <span class="spec-value" id="spec-delivery">Available (+2 000 ₸)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="listing-detail-section">
+                    <h3>Select Duration</h3>
+                    <div class="duration-options" id="duration-options">
+                        <div class="duration-option" data-days="1">
+                            <div class="duration-days">1</div>
+                            <div class="duration-label">day</div>
+                        </div>
+                        <div class="duration-option active" data-days="3">
+                            <div class="duration-days">3</div>
+                            <div class="duration-label">days</div>
+                            <div class="duration-discount">-10%</div>
+                        </div>
+                        <div class="duration-option" data-days="7">
+                            <div class="duration-days">7</div>
+                            <div class="duration-label">days</div>
+                            <div class="duration-discount">-15%</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="price-summary">
+                    <div class="price-row">
+                        <span>Rental (<span id="summary-days">3</span> days × <span id="daily-rate">15 000</span> ₸)</span>
+                        <span id="rental-price">45 000 ₸</span>
+                    </div>
+                    <div class="price-row" id="discount-row" style="display:none;">
+                        <span>Discount (<span id="discount-percent">10</span>%)</span>
+                        <span id="discount-amount">-4 500 ₸</span>
+                    </div>
+                    <div class="price-row" id="delivery-row">
+                        <span>Delivery</span>
+                        <span id="delivery-price">2 000 ₸</span>
+                    </div>
+                    <div class="price-row total">
+                        <span>Total</span>
+                        <span id="total-price">42 500 ₸</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="screen-footer">
+            <button class="btn btn-primary btn-full" id="btn-rent">
+                <span class="btn-text">Rent Now</span>
+                <span class="btn-loader hidden"></span>
+            </button>
+        </footer>
+    </div>
+
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        const state = App.getState();
+        const listingId = state.currentListingId;
+        const listing = MockData.rentalListings.find(l => l.id === listingId);
+
+        if (!listing) {
+            window.location.href = 'home.html';
+        }
+
+        // Duration options with discounts
+        const durationOptions = [
+            { days: 1, label: '1 day', discount: 0 },
+            { days: 3, label: '3 days', discount: 0.1 },
+            { days: 7, label: '1 week', discount: 0.15 }
+        ];
+
+        let selectedDuration = 3;
+        let selectedDiscount = 0.1;
+
+        // Populate listing data
+        document.getElementById('listing-title').textContent = listing.title;
+        document.getElementById('listing-desc').textContent = listing.description;
+        document.getElementById('listing-badge').textContent = App.getItemName(listing.itemType);
+        document.getElementById('listing-distance').textContent = listing.distance + ' km';
+
+        // Owner info
+        document.querySelector('.listing-owner-avatar').textContent = listing.owner.avatar;
+        document.querySelector('.listing-owner-name').textContent = listing.owner.name;
+        document.getElementById('owner-rating').textContent = listing.owner.rating;
+        document.getElementById('owner-reviews').textContent = listing.owner.reviewsCount;
+
+        // Games list (if available)
+        const gamesSection = document.getElementById('games-section');
+        const gamesList = document.getElementById('games-list');
+        if (listing.games && listing.games.length > 0) {
+            gamesSection.style.display = 'block';
+            gamesList.innerHTML = listing.games.map(game => `
+                <span class="game-tag">${game}</span>
+            `).join('');
+        } else {
+            gamesSection.style.display = 'none';
+        }
+
+        // Specs list (for PC/VR)
+        const specsSection = document.getElementById('specs-section');
+        const specsList = document.getElementById('specs-list');
+        if (listing.specs && listing.specs.length > 0) {
+            specsSection.style.display = 'block';
+            specsList.innerHTML = listing.specs.map(spec => `
+                <span class="spec-tag">${spec}</span>
+            `).join('');
+        }
+
+        // Specs details
+        document.getElementById('spec-console').textContent = App.getItemName(listing.itemType);
+
+        // Controllers row - only show for consoles
+        const controllersRow = document.getElementById('controllers-row');
+        if (listing.controllers !== undefined) {
+            controllersRow.style.display = 'flex';
+            document.getElementById('spec-controllers').textContent = listing.controllers;
+        } else {
+            controllersRow.style.display = 'none';
+        }
+
+        const deliveryFee = MockData.pricing.deliveryFee;
+        document.getElementById('spec-delivery').textContent = listing.delivery
+            ? `Available (+${App.formatPrice(deliveryFee)})`
+            : 'Not available';
+
+        // Duration selection
+        const durationBtns = document.querySelectorAll('.duration-option');
+        durationBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                durationBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedDuration = parseInt(btn.dataset.days);
+
+                // Find discount for selected duration
+                const option = durationOptions.find(o => o.days === selectedDuration);
+                selectedDiscount = option ? option.discount : 0;
+
+                updatePricing();
+            });
+        });
+
+        function updatePricing() {
+            const basePrice = listing.pricePerDay * selectedDuration;
+            const discountAmount = Math.round(basePrice * selectedDiscount);
+            const rentalPrice = basePrice - discountAmount;
+            const total = rentalPrice + deliveryFee;
+
+            document.getElementById('summary-days').textContent = selectedDuration;
+            document.getElementById('daily-rate').textContent = listing.pricePerDay.toLocaleString('kk-KZ');
+            document.getElementById('rental-price').textContent = App.formatPrice(basePrice);
+
+            // Show/hide discount row
+            const discountRow = document.getElementById('discount-row');
+            if (selectedDiscount > 0) {
+                discountRow.style.display = 'flex';
+                document.getElementById('discount-percent').textContent = Math.round(selectedDiscount * 100);
+                document.getElementById('discount-amount').textContent = '-' + App.formatPrice(discountAmount);
+            } else {
+                discountRow.style.display = 'none';
+            }
+
+            document.getElementById('delivery-price').textContent = App.formatPrice(deliveryFee);
+            document.getElementById('total-price').textContent = App.formatPrice(total);
+        }
+
+        // Initialize pricing
+        updatePricing();
+
+        // Rent button
+        const btnRent = document.getElementById('btn-rent');
+        btnRent.addEventListener('click', async () => {
+            App.setButtonLoading(btnRent, true);
+
+            const basePrice = listing.pricePerDay * selectedDuration;
+            const discountAmount = Math.round(basePrice * selectedDiscount);
+            const rentalPrice = basePrice - discountAmount;
+            const total = rentalPrice + deliveryFee;
+
+            const order = {
+                listingId: listing.id,
+                itemType: listing.itemType,
+                itemName: App.getItemName(listing.itemType),
+                duration: selectedDuration,
+                durationLabel: selectedDuration === 1 ? '1 day' : selectedDuration === 7 ? '1 week' : `${selectedDuration} days`,
+                delivery: 'delivery',
+                dailyRate: listing.pricePerDay,
+                rentalPrice: rentalPrice,
+                discount: discountAmount,
+                deliveryFee: deliveryFee,
+                total: total,
+                status: 'searching',
+                createdAt: Date.now(),
+                listing: listing
+            };
+
+            App.updateState({ activeOrder: order });
+
+            await App.delay(500);
+            window.location.href = 'waiting.html';
+        });
+    </script>
+</body>
+</html>

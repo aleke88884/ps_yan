@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Owner Dashboard - PS Rent</title>
+    <title>Owner Dashboard - RentTech</title>
     <link rel="stylesheet" href="../css/styles.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,7 +14,7 @@
         <header class="screen-header home-header">
             <div class="user-greeting">
                 <span class="greeting-text">Welcome back,</span>
-                <span class="user-name" id="owner-name">Dmitry</span>
+                <span class="user-name" id="owner-name">Damir</span>
             </div>
             <a href="profile.html" class="btn-icon">
                 <div class="avatar owner">
@@ -39,7 +39,7 @@
             <!-- Stats -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <span class="stat-value" id="today-earnings">0₽</span>
+                    <span class="stat-value" id="today-earnings">0 ₸</span>
                     <span class="stat-label">Today's earnings</span>
                 </div>
                 <div class="stat-card">
@@ -68,8 +68,8 @@
                 <ul class="tips-list">
                     <li>Stay online during peak hours (18:00 - 23:00)</li>
                     <li>Respond to requests quickly</li>
-                    <li>Keep your console in great condition</li>
-                    <li>Offer games to increase appeal</li>
+                    <li>Keep your equipment in great condition</li>
+                    <li>Offer games and accessories to increase appeal</li>
                 </ul>
             </div>
         </main>
@@ -81,12 +81,13 @@
                 </svg>
                 <span>Home</span>
             </a>
-            <a href="map.html" class="nav-item">
+            <a href="my-listings.html" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-                    <circle cx="12" cy="10" r="3"/>
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="12" y1="8" x2="12" y2="16"/>
+                    <line x1="8" y1="12" x2="16" y2="12"/>
                 </svg>
-                <span>Map</span>
+                <span>Listings</span>
             </a>
             <a href="earnings.html" class="nav-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -133,19 +134,50 @@
         updateOnlineUI(ownerProfile.isOnline);
 
         // Toggle handler
-        onlineToggle.addEventListener('change', () => {
+        onlineToggle.addEventListener('change', async () => {
             const isOnline = onlineToggle.checked;
 
-            // Update state
-            App.updateState({
-                ownerProfile: { ...ownerProfile, isOnline }
-            });
-
-            updateOnlineUI(isOnline);
-
             if (isOnline) {
-                App.showToast('You are now online!', 'success');
+                // Request geolocation when going online
+                if ('geolocation' in navigator) {
+                    try {
+                        const permission = await new Promise((resolve, reject) => {
+                            navigator.geolocation.getCurrentPosition(
+                                (position) => resolve(position),
+                                (error) => reject(error),
+                                { enableHighAccuracy: true }
+                            );
+                        });
+
+                        // Update state with location
+                        App.updateState({
+                            ownerProfile: {
+                                ...ownerProfile,
+                                isOnline,
+                                location: {
+                                    lat: permission.coords.latitude,
+                                    lng: permission.coords.longitude
+                                }
+                            }
+                        });
+
+                        updateOnlineUI(isOnline);
+                        App.showToast('You are now online!', 'success');
+                    } catch (error) {
+                        onlineToggle.checked = false;
+                        App.showToast('Please enable location access to go online', 'error');
+                        return;
+                    }
+                } else {
+                    onlineToggle.checked = false;
+                    App.showToast('Geolocation is not supported', 'error');
+                    return;
+                }
             } else {
+                App.updateState({
+                    ownerProfile: { ...ownerProfile, isOnline }
+                });
+                updateOnlineUI(isOnline);
                 App.showToast('You are now offline', 'info');
             }
         });
@@ -186,12 +218,12 @@
                     </div>
                     <div class="request-details">
                         <div class="request-detail">
-                            <span class="request-detail-label">Console</span>
-                            <span class="request-detail-value">${req.console}</span>
+                            <span class="request-detail-label">Equipment</span>
+                            <span class="request-detail-value">${req.itemName || req.console}</span>
                         </div>
                         <div class="request-detail">
                             <span class="request-detail-label">Duration</span>
-                            <span class="request-detail-value">${req.duration}h</span>
+                            <span class="request-detail-value">${req.durationLabel || req.duration + ' days'}</span>
                         </div>
                         <div class="request-detail">
                             <span class="request-detail-label">Distance</span>

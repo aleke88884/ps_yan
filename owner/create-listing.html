@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Create Listing - PS Rent</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <header class="screen-header">
+            <button class="btn-back" onclick="window.location.href='my-listings.html'">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"/>
+                </svg>
+            </button>
+            <h2 class="screen-title">Create Listing</h2>
+            <div class="header-spacer"></div>
+        </header>
+
+        <main class="screen-content">
+            <div class="create-listing-form">
+                <!-- Photo Upload -->
+                <div class="form-section">
+                    <label class="form-label">Photo</label>
+                    <div class="photo-upload" id="photo-upload">
+                        <input type="file" id="photo-input" accept="image/*" hidden>
+                        <div class="photo-placeholder" id="photo-placeholder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                                <circle cx="8.5" cy="8.5" r="1.5"/>
+                                <polyline points="21 15 16 10 5 21"/>
+                            </svg>
+                            <span>Add Photo</span>
+                        </div>
+                        <img id="photo-preview" src="" alt="Preview" style="display: none;">
+                    </div>
+                </div>
+
+                <!-- Title -->
+                <div class="form-section">
+                    <label class="form-label">Title</label>
+                    <input type="text" class="form-input" id="listing-title" placeholder="e.g., PS5 + FIFA 24 Bundle">
+                </div>
+
+                <!-- Description -->
+                <div class="form-section">
+                    <label class="form-label">Description</label>
+                    <textarea class="form-textarea" id="listing-desc" placeholder="Describe your console, included games, controllers, and condition..."></textarea>
+                </div>
+
+                <!-- Console Type -->
+                <div class="form-section">
+                    <label class="form-label">Console Type</label>
+                    <div class="option-chips">
+                        <button class="chip active" data-console="ps5">PS5</button>
+                        <button class="chip" data-console="ps4-pro">PS4 Pro</button>
+                        <button class="chip" data-console="ps4">PS4</button>
+                    </div>
+                </div>
+
+                <!-- Price per Hour -->
+                <div class="form-section">
+                    <label class="form-label">Price per Hour</label>
+                    <div class="price-input-wrapper">
+                        <input type="number" class="form-input price-input" id="listing-price" placeholder="800" min="100" max="5000">
+                        <span class="price-suffix">₽/hour</span>
+                    </div>
+                    <p class="form-hint">Recommended: PS5 - 800₽, PS4 Pro - 600₽, PS4 - 400₽</p>
+                </div>
+
+                <!-- Controllers -->
+                <div class="form-section">
+                    <label class="form-label">Number of Controllers</label>
+                    <div class="option-chips">
+                        <button class="chip controller-chip active" data-controllers="1">1</button>
+                        <button class="chip controller-chip" data-controllers="2">2</button>
+                        <button class="chip controller-chip" data-controllers="3">3+</button>
+                    </div>
+                </div>
+
+                <!-- Games -->
+                <div class="form-section">
+                    <label class="form-label">Included Games</label>
+                    <div class="games-input-wrapper">
+                        <input type="text" class="form-input" id="game-input" placeholder="Type game name and press Enter">
+                        <button class="btn btn-sm btn-primary" id="add-game-btn" type="button">Add</button>
+                    </div>
+                    <div class="games-tags" id="games-tags"></div>
+                </div>
+
+                <!-- Delivery -->
+                <div class="form-section">
+                    <label class="form-label">Delivery Available</label>
+                    <label class="toggle-switch-inline">
+                        <input type="checkbox" id="delivery-toggle" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">Offer delivery (+500₽)</span>
+                    </label>
+                </div>
+            </div>
+        </main>
+
+        <footer class="screen-footer">
+            <button class="btn btn-primary btn-full" id="btn-create">
+                <span class="btn-text">Create Listing</span>
+                <span class="btn-loader hidden"></span>
+            </button>
+        </footer>
+    </div>
+
+    <script src="../js/mock-data.js"></script>
+    <script src="../js/app.js"></script>
+    <script>
+        const state = App.getState();
+        const ownerProfile = state.ownerProfile;
+
+        // Form state
+        let formData = {
+            consoleType: 'ps5',
+            controllers: 1,
+            games: [],
+            delivery: true
+        };
+
+        // Console type selection
+        const consoleChips = document.querySelectorAll('.chip[data-console]');
+        consoleChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                consoleChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                formData.consoleType = chip.dataset.console;
+            });
+        });
+
+        // Controllers selection
+        const controllerChips = document.querySelectorAll('.controller-chip');
+        controllerChips.forEach(chip => {
+            chip.addEventListener('click', () => {
+                controllerChips.forEach(c => c.classList.remove('active'));
+                chip.classList.add('active');
+                formData.controllers = parseInt(chip.dataset.controllers);
+            });
+        });
+
+        // Games management
+        const gameInput = document.getElementById('game-input');
+        const addGameBtn = document.getElementById('add-game-btn');
+        const gamesTags = document.getElementById('games-tags');
+
+        function addGame() {
+            const gameName = gameInput.value.trim();
+            if (gameName && !formData.games.includes(gameName)) {
+                formData.games.push(gameName);
+                renderGameTags();
+                gameInput.value = '';
+            }
+        }
+
+        function removeGame(gameName) {
+            formData.games = formData.games.filter(g => g !== gameName);
+            renderGameTags();
+        }
+
+        function renderGameTags() {
+            gamesTags.innerHTML = formData.games.map(game => `
+                <span class="game-tag removable">
+                    ${game}
+                    <button onclick="removeGame('${game}')">&times;</button>
+                </span>
+            `).join('');
+        }
+
+        addGameBtn.addEventListener('click', addGame);
+        gameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addGame();
+            }
+        });
+
+        // Delivery toggle
+        const deliveryToggle = document.getElementById('delivery-toggle');
+        deliveryToggle.addEventListener('change', () => {
+            formData.delivery = deliveryToggle.checked;
+        });
+
+        // Photo upload
+        const photoUpload = document.getElementById('photo-upload');
+        const photoInput = document.getElementById('photo-input');
+        const photoPlaceholder = document.getElementById('photo-placeholder');
+        const photoPreview = document.getElementById('photo-preview');
+
+        photoUpload.addEventListener('click', () => photoInput.click());
+
+        photoInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    photoPreview.src = e.target.result;
+                    photoPreview.style.display = 'block';
+                    photoPlaceholder.style.display = 'none';
+                    formData.image = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Create listing
+        const btnCreate = document.getElementById('btn-create');
+        btnCreate.addEventListener('click', async () => {
+            const title = document.getElementById('listing-title').value.trim();
+            const description = document.getElementById('listing-desc').value.trim();
+            const price = parseInt(document.getElementById('listing-price').value) || 0;
+
+            // Validation
+            if (!title) {
+                App.showToast('Please enter a title', 'error');
+                return;
+            }
+            if (!description) {
+                App.showToast('Please enter a description', 'error');
+                return;
+            }
+            if (price < 100) {
+                App.showToast('Price must be at least 100₽', 'error');
+                return;
+            }
+
+            App.setButtonLoading(btnCreate, true);
+
+            // Create listing object
+            const newListing = {
+                id: Date.now(),
+                title: title,
+                description: description,
+                image: formData.image || '',
+                consoleType: formData.consoleType,
+                pricePerHour: price,
+                games: formData.games,
+                controllers: formData.controllers,
+                delivery: formData.delivery,
+                active: true,
+                createdAt: Date.now(),
+                owner: {
+                    id: ownerProfile.id || 1,
+                    name: ownerProfile.name,
+                    avatar: ownerProfile.avatar,
+                    rating: ownerProfile.rating,
+                    reviewsCount: ownerProfile.reviewsCount || 0,
+                    phone: ownerProfile.phone || ''
+                }
+            };
+
+            // Save to state
+            const existingListings = state.ownerListings || [];
+            existingListings.push(newListing);
+            App.updateState({ ownerListings: existingListings });
+
+            await App.delay(500);
+
+            App.showToast('Listing created successfully!', 'success');
+            window.location.href = 'my-listings.html';
+        });
+    </script>
+</body>
+</html>
